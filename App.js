@@ -40,7 +40,11 @@ export default function App() {
   const getDetailedLocation = async (latitude, longitude) => {
   if(lat !== ''){
     let newLocation = await axios.get(`https:us1.locationiq.com/v1/search.php?key=pk.ec7dd268e7db863b8ee3de2dc5489245&q=${latitude},${longitude}&format=json`);
-    setDetailedLocation(newLocation.data[0].display_name);
+    let array = newLocation.data[0].display_name.split(',');
+    array.shift();
+    array.shift();
+    setDetailedLocation(array.join());
+    console.log();
   }
 }
 
@@ -74,8 +78,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
   },
   media:{
-    width: 300,
-    height: 300,
+    width: 500,
     flex: 2,
   }
 });
