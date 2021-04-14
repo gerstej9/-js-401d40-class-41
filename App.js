@@ -1,10 +1,10 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect }from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
-import axios from 'axios';
+import { Image, StyleSheet, Text, View, Button } from 'react-native';
 
 import * as Location from 'expo-location';
 import bigBrother from './assets/BigBrother.jpg'
+import { withRouter } from 'react-router';
 
 export default function App() {
 
@@ -12,18 +12,19 @@ export default function App() {
   const [errorMsg, setErrorMsg] = useState(null);
   const [detailedLocation, setDetailedLocation] = useState('');
 
-  useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied');
-        return;
-      }
 
-      let location = await Location.getCurrentPositionAsync({});
-      setLocation(location);
-    })();
-  }, []);
+  const askLocationPermissions = async () => {
+    let { status } = await Location.requestPermissionsAsync();
+    if (status !== 'granted') {
+      setErrorMsg('Permission to access location was denied');
+      return;
+    }
+    let location = await Location.getCurrentPositionAsync({});
+    setLocation(location);
+    // lat = location.coords.latitude;
+    // lon = location.coords.longitude;
+    // getDetailedLocation(lat, lon);
+  }
 
   let lat = '';
   let lon = '';
@@ -39,12 +40,12 @@ export default function App() {
 
   const getDetailedLocation = async (latitude, longitude) => {
   if(lat !== ''){
-    let newLocation = await axios.get(`https:us1.locationiq.com/v1/search.php?key=pk.ec7dd268e7db863b8ee3de2dc5489245&q=${latitude},${longitude}&format=json`);
-    let array = newLocation.data[0].display_name.split(',');
+    let newLocation = await fetch(`https:us1.locationiq.com/v1/search.php?key=pk.ec7dd268e7db863b8ee3de2dc5489245&q=${latitude},${longitude}&format=json`);
+    let data = await newLocation.json();
+    let array = data[0].display_name.split(',');
     array.shift();
     array.shift();
     setDetailedLocation(array.join());
-    console.log();
   }
 }
 
@@ -53,14 +54,19 @@ export default function App() {
   }, [lat]);
 
 
-  return (
-    <View style={styles.container}>
-      <Image source={bigBrother} style={styles.media}/>
-      <Text style={styles.text}>Big Brother is Watching...</Text>
-      <Text style={styles.text}>{detailedLocation}</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+return (
+  <View style={styles.container}>
+    <Button
+    color='red'
+    onPress={askLocationPermissions}
+    title="Click to Enter the Evil Empire"
+    />
+    <Image source={bigBrother} style={styles.media}/>
+    <Text style={styles.text}>Big Brother is Watching...</Text>
+    <Text style={styles.text}>{detailedLocation}</Text>
+    <StatusBar style="auto" />
+  </View>
+);
 }
 
 const styles = StyleSheet.create({
@@ -80,5 +86,6 @@ const styles = StyleSheet.create({
   media:{
     width: 500,
     flex: 2,
-  }
+    marginTop:5,
+  },
 });
